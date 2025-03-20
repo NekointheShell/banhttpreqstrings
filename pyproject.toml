@@ -1,0 +1,8 @@
+[project]
+name = 'banhttpreqstrings'
+version = '1'
+
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: Linux'
+]
