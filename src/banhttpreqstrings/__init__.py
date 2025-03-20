@@ -1,5 +1,5 @@
-import logging, sys, os, threading, signal
-from banhttpreqstrings import tail
+import logging, configparser, threading, sys, signal, os
+import banhttpreqstrings.tail as tail
 from systemd import journal
 
 
@@ -9,30 +9,34 @@ log.setLevel(logging.INFO)
 
 config = configparser.ConfigParser()
 try: config.read('/etc/banhttpreqstrings/banhttpreqstrings.conf')
-except: shutdown(exception = 'Configuration file not found!')
+except: raise Exception('Configuration file not found!')
 
 threads = []
 stop_threads = threading.Event()
+
+exit_code = 0
 
 
 def get_log_file_paths()
     if config.has_option('banhttpreqstrings', 'log_paths'):
         return config.get('banhttpreqstrings', 'log_paths')
 
-    else: shutdown(exception = 'Nothing to monitor!')
+    else: raise Exception('log_paths not specified in configuration file!')
 
 
-def shutdown(exception = False):
+def shutdown():
     log.info('Shutting down...')
     stop_threads.set()
     for thread in threads: thread.join(timeout = 5)
+    if threading.active_count() != 0: exit_code = 1
 
-    if threading.active_count() != 0: sys.exit(1)
-    if exception:
-        log.error(exception)
-        sys.exit(1)
+    sys.exit(exit_code)
 
-    sys.exit(0)
+
+def exception_handler(exception_type, exception_value, exception_traceback):
+    log.error('{}: {}'.format(exception_type.__name__, exception_value))
+    exit_code = 2
+    shutdown()
 
 
 def main():
