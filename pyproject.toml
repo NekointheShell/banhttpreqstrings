@@ -9,4 +9,4 @@ classifiers = [
 
 
 [project.scripts]
-banhttpreqstrings = 'banhttpreqstrings'
+banhttpreqstrings = 'banhttpreqstrings:main'

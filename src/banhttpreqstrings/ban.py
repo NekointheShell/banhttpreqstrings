@@ -1,14 +1,16 @@
-import logging, configparser, os, mmap, fcntl, ipaddress
+import logging, yaml, os, mmap, fcntl, ipaddress
 
 
 log = logging.getLogger(__name__)
 
-config = configparser.ConfigParser()
-try: config.read('/etc/banhttpreqstrings/banhttpreqstrings.conf')
+
+try: file = open('/etc/banhttpreqstrings/banhttpreqstrings.yaml', 'r')
 except: raise Exception('Configuration file not found!')
 
-if config.has_option('banhttpreqstrings', 'ban_file_path'):
-    ban_file_path = config.get('banhttpreqstrings', 'ban_file_path')
+config = yaml.safe_load(file)
+file.close()
+
+if 'ban_file_path' in config: ban_file_path = config['ban_file_path']
 else: raise Exception('ban_file_path not specified in configuration file!')
 
 
@@ -18,7 +20,7 @@ def is_banned(ip):
     file = open(ban_file_path, 'r')
     mmapped_file = mmap.mmap(file.fileno(), 0, access = mmap.ACCESS_READ)
 
-    if ip in mmapped_file.readlines().rstrip(): return True
+    if ip in mmapped_file.read().decode().rstrip(): return True
     return False
 
 

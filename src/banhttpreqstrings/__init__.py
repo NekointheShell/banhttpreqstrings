@@ -1,4 +1,4 @@
-import logging, configparser, threading, sys, signal, os
+import logging, yaml, threading, sys, signal, os
 import banhttpreqstrings.tail as tail
 from systemd import journal
 
@@ -7,21 +7,19 @@ log = logging.getLogger(__name__)
 log.addHandler(journal.JournalHandler())
 log.setLevel(logging.INFO)
 
-config = configparser.ConfigParser()
-try: config.read('/etc/banhttpreqstrings/banhttpreqstrings.conf')
+try: file = open('/etc/banhttpreqstrings/banhttpreqstrings.yaml', 'r')
 except: raise Exception('Configuration file not found!')
+
+config = yaml.safe_load(file)
+file.close()
+
+if 'log_file_paths' in config: log_file_paths = config['log_file_paths']
+else: raise Exception('log_file_paths not specified in configuration file!')
 
 threads = []
 stop_threads = threading.Event()
 
 exit_code = 0
-
-
-def get_log_file_paths()
-    if config.has_option('banhttpreqstrings', 'log_paths'):
-        return config.get('banhttpreqstrings', 'log_paths')
-
-    else: raise Exception('log_paths not specified in configuration file!')
 
 
 def shutdown():
@@ -46,9 +44,8 @@ def main():
     try: os.system('iptables -N banhttpreqstrings')
     except: pass
 
-    log_file_paths = get_log_file_paths()
     for log_file_path in log_file_paths:
-        thread = threading.Thread(target = tail.tail, args = (log_file_path,))
+        thread = threading.Thread(target = tail.tail, args = (log_file_path, stop_threads))
         thread.start()
         threads.append(thread)
 
