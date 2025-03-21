@@ -31,6 +31,10 @@ def shutdown():
     sys.exit(exit_code)
 
 
+def sigterm(signal, frame):
+    shutdown()
+
+
 def exception_handler(exception_type, exception_value, exception_traceback):
     log.error('{}: {}'.format(exception_type.__name__, exception_value))
     exit_code = 2
@@ -39,7 +43,7 @@ def exception_handler(exception_type, exception_value, exception_traceback):
 
 def main():
     log.info('Starting service...')
-    signal.signal(signal.SIGTERM, shutdown)
+    signal.signal(signal.SIGTERM, sigterm)
 
     try: os.system('iptables -N banhttpreqstrings')
     except: pass

@@ -1,4 +1,4 @@
-import logging, yaml, mmap
+import logging, yaml, mmap, os, time
 import banhttpreqstrings.ban as ban
 
 
@@ -16,11 +16,16 @@ else: raise Exception('banned_paths not specified in configuration file!')
 if 'exempt_ips' in config: exempt_ips = config['exempt_ips']
 
 
+def filesize0_edgecase(log_file_path):
+    while os.path.getsize(log_file_path) == 0:
+        time.sleep(1)
+
+
 def tail(log_file_path, stop_threads):
-    print(log_file_path)
     log.info('Tailing {}...'.format(log_file_path))
 
     file = open(log_file_path, 'r')
+    if os.path.getsize(log_file_path) == 0: filesize0_edgecase(log_file_path)
     mmapped_file = mmap.mmap(file.fileno(), 0, access = mmap.ACCESS_READ)
 
     while not stop_threads.is_set():
