@@ -1,4 +1,4 @@
-import logging, yaml, mmap, os, time, re
+import logging, yaml, mmap, os, time, re, ipaddress
 import banhttpreqstrings.ban as ban
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -25,10 +25,10 @@ for path in banned_paths:
 
 
 class NewLineHandler(FileSystemEventHandler):
-    def __init__(self, file_path, file):
+    def __init__(self, file_path, file, position):
         self.file_path = file_path
         self.file = file
-        self.position = 0
+        self.position = position
 
 
     def dispatch(self, event):
@@ -46,28 +46,34 @@ class NewLineHandler(FileSystemEventHandler):
             process_line(line)
 
 
+    def on_exit(self, event):
+        self.file.close()
+
+
 def process_line(line):
+    if line == '' or line == "\n": return
+
     for path in banned_paths_regex:
         if re.search(path, line) != None:
             ip = line.split()[0]
             if ip not in exempt_ips and ipaddress.ip_address(ip): ban.ban(ip)
     
 
-
 def tail(log_file_path, stop_threads):
     log.info('Tailing {}...'.format(log_file_path))
 
     file = open(log_file_path, 'r')
+    for line in file.readlines(): process_line(line)
+
+    observer = Observer()
+    handler = NewLineHandler(log_file_path, file, file.tell())
+    observer.schedule(handler, path = os.path.dirname(log_file_path), recursive = False)
+    observer.start()
+
     while not stop_threads.is_set():
-        line = file.readline()
+        time.sleep(1)
 
-        if line != '' and line != "\n": process_line(line)
-        else:
-            observer = Observer()
-            handler = NewLineHandler(log_file_path)
-
-            observer.schedule(handler, path = os.path.dirname(log_file_path), recursive = False)
-            observer.start()
-
+    observer.stop()
+    observer.join()
     log.info('Closing {}...'.format(log_file_path))
     file.close()

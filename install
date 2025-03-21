@@ -7,5 +7,6 @@ cp banhttpreqstrings.yaml /etc/banhttpreqstrings/
 
 export DEBIAN_FRONTEND=noninteractive
 apt install -y python3-systemd
+apt install -y python3-watchdog
 
 pip install . --break-system-packages

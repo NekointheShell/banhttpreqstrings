@@ -1,4 +1,4 @@
-import logging, yaml, threading, sys, signal, os
+import logging, yaml, threading, sys, signal, os, time
 import banhttpreqstrings.tail as tail
 from systemd import journal
 
@@ -16,19 +16,19 @@ file.close()
 if 'log_file_paths' in config: log_file_paths = config['log_file_paths']
 else: raise Exception('log_file_paths not specified in configuration file!')
 
-threads = []
 stop_threads = threading.Event()
-
-exit_code = 0
 
 
 def shutdown():
     log.info('Shutting down...')
     stop_threads.set()
-    for thread in threads: thread.join(timeout = 5)
-    if threading.active_count() != 0: exit_code = 1
 
-    sys.exit(exit_code)
+    for thread in threading.enumerate():
+        if thread is not threading.main_thread():
+            thread.join()
+
+    if threading.active_count() != 1: sys.exit('Threads did not stop in time!')
+    sys.exit()
 
 
 def sigterm(signal, frame):
@@ -51,7 +51,8 @@ def main():
     for log_file_path in log_file_paths:
         thread = threading.Thread(target = tail.tail, args = (log_file_path, stop_threads))
         thread.start()
-        threads.append(thread)
+
+    while True: time.sleep(1)
 
 
 if __name__ == '__main__': main()
