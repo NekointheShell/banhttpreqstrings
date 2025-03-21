@@ -1,0 +1,11 @@
+[Unit]
+Description=Tails nginx logs, bans on attempts to access specified paths
+Requires=network.target nginx.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=banhttpreqstrings
+
+[Install]
+WantedBy=multi-user.target
