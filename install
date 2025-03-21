@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+mkdir /etc/banhttpreqstrings
+mkdir /var/lib/banhttpreqstrings
+
+cp banhttpreqstrings.yaml /etc/banhttpreqstrings/
+
+export DEBIAN_FRONTEND=noninteractive
+apt install -y python3-systemd
+
+pip install . --break-system-packages
