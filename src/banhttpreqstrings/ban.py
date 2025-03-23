@@ -40,4 +40,4 @@ def ban(ip):
     if not is_banned(ip):
         log.info('Banning {}...'.format(ip))
         save_ban(ip)
-        os.system('iptables -A ban_noncreative -s {} -j DROP'.format(ip))
+        os.system('iptables -A banhttpreqstrings -s {} -j DROP'.format(ip))
