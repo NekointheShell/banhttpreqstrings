@@ -57,9 +57,12 @@ def process_line(line):
         match = re.search(path, line)
         if match != None:
             ip = line.split()[0]
-            if ipaddress.ip_address(ip) and ip not in exempt_ips:
-                log.info('Matched "{}" from {}'.format(match.group(), ip))
-                ban.ban(ip)
+            if ipaddress.ip_address(ip):
+                if ip not in exempt_ips:
+                    log.info('Matched "{}" from {}'.format(match.group(), ip))
+                    ban.ban(ip)
+                else:
+                    log.info('IP exempted: {}'.format(ip))
     
 
 def tail(log_file_path, stop_threads):

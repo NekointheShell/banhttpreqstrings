@@ -45,7 +45,9 @@ def main():
     log.info('Starting service...')
     signal.signal(signal.SIGTERM, sigterm)
 
-    try: os.system('iptables -N banhttpreqstrings')
+    try:
+        os.system('iptables -N banhttpreqstrings')
+        os.system('iptables -A INPUT -j banhttpreqstrings')
     except: pass
 
     for log_file_path in log_file_paths:
