@@ -54,9 +54,12 @@ def process_line(line):
     if line == '' or line == "\n": return
 
     for path in banned_paths_regex:
-        if re.search(path, line) != None:
+        match = re.search(path, line)
+        if match != None:
             ip = line.split()[0]
-            if ip not in exempt_ips and ipaddress.ip_address(ip): ban.ban(ip)
+            if ipaddress.ip_address(ip) and ip not in exempt_ips:
+                log.info('Matched "{}" from {}'.format(match.group(), ip))
+                ban.ban(ip)
     
 
 def tail(log_file_path, stop_threads):
