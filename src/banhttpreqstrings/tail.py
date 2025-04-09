@@ -37,6 +37,10 @@ class NewLineHandler(FileSystemEventHandler):
 
 
     def on_modified(self, event):
+        if self.position > os.fstat(self.file.fileno()).st_size:
+            self.position = 0
+            log.info('{} truncated.'.format(self.file_path))
+
         self.file.seek(self.position)
 
         lines = self.file.readlines()
